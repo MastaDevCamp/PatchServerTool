@@ -7,6 +7,13 @@ using System.IO;
 
 namespace UpdateSystem
 {
+    public class UpdateInfoRes
+    {
+        public int statusCode { get; set; }
+        public string responseMessage { get; set; }
+        public List<string> responseData { get; set; }
+    }
+
     public class ServerConnect
     {
         public const string UPDATE_SERVER_URL = "http://localhost:8082";

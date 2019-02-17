@@ -33,55 +33,36 @@ namespace TestClient
             string lastestVersion = serverConnect.GetResponse();
             serverConnect.Reset();
             UpdateDownloadButton(lastestVersion);
+            VersionText.Text = lastestVersion;
+
+            logTextBox.Text += "Successfully getting lastest version in update server\n";
 
             serverConnect.Url = ServerConnect.UPDATE_SERVER_URL + "/updateResource/Merge";
             serverConnect.Content = nowVersionText.Text;
             string response = serverConnect.PostResponse();
+            dynamic stuff = JsonConvert.DeserializeObject<UpdateInfoRes>(response);
+            List<string> fileList = stuff.responseData;
 
-            //AddUpdatelistInListView(updateListView);
+            logTextBox.Text += "Successfully getting update file list in file server\n";
+
+            AddUpdatelistInListView(fileList);
         }
 
-        public void AddUpdatelistInListView(ListView listView)
+        public void AddUpdatelistInListView(List<string> fileList)
         {
             List<UpdateFile> updateFiles = new List<UpdateFile>();
-            updateFiles.Add(new UpdateFile()
+            foreach(string fileLine in fileList)
             {
-                Type = "D",
-                Path = "/contents/images/sg1"
-            });
-            updateFiles.Add(new UpdateFile()
-            {
-                Type = "D",
-                Path = "/contents/images/sg2"
-            });
-            updateFiles.Add(new UpdateFile()
-            {
-                Type = "F",
-                Path = "/contents/images/sg1/img1"
-            });
-            updateFiles.Add(new UpdateFile()
-            {
-                Type = "F",
-                Path = "/contents/images/sg1/img2"
-            });
-            updateFiles.Add(new UpdateFile()
-            {
-                Type = "F",
-                Path = "/contents/images/sg2/img1"
-            });
-            updateFiles.Add(new UpdateFile()
-            {
-                Type = "F",
-                Path = "/contents/images/sg2/img2"
-            });
-            listView.ItemsSource = updateFiles;
+                UpdateFile updateFile = new UpdateFile();
+                updateFiles.Add(updateFile.StringToClass(fileLine));
+            }
+            updateListView.ItemsSource = updateFiles;
             logTextBox.Text += "Add filelist in UpdateList\n";
         }
 
         public void UpdateDownloadButton(string version)
         {
             downloadButton.IsEnabled = true;
-            downloadButton.Content = "Download " + version;
         }
 
         private void DownloadButton_Click(object sender, RoutedEventArgs e)

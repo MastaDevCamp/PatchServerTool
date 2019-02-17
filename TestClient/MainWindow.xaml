@@ -21,7 +21,7 @@
                     <Label Content="Version" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                     <DockPanel>
                         <Label Content="now version"/>
-                        <TextBox HorizontalAlignment="Right" Height="23" TextWrapping="Wrap" Text="1.0.1" Width="100" />
+                        <TextBox HorizontalAlignment="Right" Height="23" TextWrapping="Wrap" Text="1.0.1" Width="100" Name="nowVersionText"/>
                         <Button Content="Update Check" Name="updateButton" Width="100" HorizontalAlignment="Right" Click="UpdateButton_Click" />
                     </DockPanel>
                 </StackPanel>
@@ -33,6 +33,7 @@
                 </Grid.RowDefinitions>
                 <DockPanel>
                     <Label Content="Update" />
+                    <TextBox Margin="10 0 0 0" Width="40" VerticalAlignment="Center" TextAlignment="Center" Text="null"/>
                     <Button Content="Download" Name="downloadButton" Height="25" HorizontalAlignment="Right" Width="80" IsEnabled="False" Click="DownloadButton_Click"/>
                 </DockPanel>
                 <ListView Grid.Row="1" Name="updateListView">

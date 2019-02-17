@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,8 +28,17 @@ namespace TestClient
 
         private void UpdateButton_Click(object sender, RoutedEventArgs e)
         {
-            AddUpdatelistInListView(updateListView);
-            UpdateDownloadButton("1.0.1");
+            ServerConnect serverConnect = new ServerConnect();
+            serverConnect.Url = ServerConnect.UPDATE_SERVER_URL + "/updateResource/lastVersion";
+            string lastestVersion = serverConnect.GetResponse();
+            serverConnect.Reset();
+            UpdateDownloadButton(lastestVersion);
+
+            serverConnect.Url = ServerConnect.UPDATE_SERVER_URL + "/updateResource/Merge";
+            serverConnect.Content = nowVersionText.Text;
+            string response = serverConnect.PostResponse();
+
+            //AddUpdatelistInListView(updateListView);
         }
 
         public void AddUpdatelistInListView(ListView listView)
@@ -71,7 +81,7 @@ namespace TestClient
         public void UpdateDownloadButton(string version)
         {
             downloadButton.IsEnabled = true;
-            downloadButton.Content = "Download "+version;
+            downloadButton.Content = "Download " + version;
         }
 
         private void DownloadButton_Click(object sender, RoutedEventArgs e)

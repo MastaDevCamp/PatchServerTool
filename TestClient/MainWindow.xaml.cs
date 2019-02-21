@@ -1,8 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -21,6 +23,9 @@ namespace TestClient
     /// </summary>
     public partial class MainWindow : Window
     {
+        private BackgroundWorker myThread;
+        private List<UpdateFile> updateFiles = new List<UpdateFile>();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -28,29 +33,49 @@ namespace TestClient
 
         private void UpdateButton_Click(object sender, RoutedEventArgs e)
         {
-            ServerConnect serverConnect = new ServerConnect();
-            serverConnect.Url = ServerConnect.UPDATE_SERVER_URL + "/updateResource/lastVersion";
-            string lastestVersion = serverConnect.GetResponse();
-            serverConnect.Reset();
-            UpdateDownloadButton(lastestVersion);
-            VersionText.Text = lastestVersion;
+            myThread = new BackgroundWorker()
+            {
+                WorkerReportsProgress = true,
+                WorkerSupportsCancellation = true
+            };
 
-            logTextBox.Text += "Successfully getting lastest version in update server\n";
+            myThread.DoWork += CheckUpdate;
+            myThread.RunWorkerAsync();
+        }
 
-            serverConnect.Url = ServerConnect.UPDATE_SERVER_URL + "/updateResource/Merge";
-            serverConnect.Content = nowVersionText.Text;
-            string response = serverConnect.PostResponse();
-            dynamic stuff = JsonConvert.DeserializeObject<UpdateInfoRes>(response);
-            List<string> fileList = stuff.responseData;
+        public void CheckUpdate(object sender, DoWorkEventArgs e)
+        {
+            this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal,
+                (ThreadStart)delegate ()
+                {
+                    logTextBox.Text += "Try to connect server.\n";
 
-            logTextBox.Text += "Successfully getting update file list in file server\n";
+                    ServerConnect serverConnect = new ServerConnect();
+                    serverConnect.Url = ServerConnect.UPDATE_SERVER_URL + "/updateResource/lastVersion";
+                    string lastestVersion = serverConnect.GetResponse();
+                    serverConnect.Reset();
+                    UpdateDownloadButton(lastestVersion);
+                    VersionText.Text = lastestVersion;
 
-            AddUpdatelistInListView(fileList);
+                    logTextBox.Text += "Successfully getting lastest version in update server.\n";
+
+                    serverConnect.Url = ServerConnect.UPDATE_SERVER_URL + "/updateResource/Merge";
+                    serverConnect.Content = nowVersionText.Text;
+                    string response = serverConnect.PostResponse();
+                    dynamic stuff = JsonConvert.DeserializeObject<UpdateInfoRes>(response);
+                    List<string> fileList = stuff.responseData;
+
+                    logTextBox.Text += "Successfully getting update file list in file server.\n";
+
+                    AddUpdatelistInListView(fileList);
+                }
+                );
+            
         }
 
         public void AddUpdatelistInListView(List<string> fileList)
         {
-            List<UpdateFile> updateFiles = new List<UpdateFile>();
+            updateFiles.Clear();
             foreach(string fileLine in fileList)
             {
                 UpdateFile updateFile = new UpdateFile();
@@ -68,7 +93,31 @@ namespace TestClient
         private void DownloadButton_Click(object sender, RoutedEventArgs e)
         {
             logTextBox.Text += "Start " + downloadButton.Content + "\n";
-        }
+
+            ServerConnect serverConnect = new ServerConnect()
+            {
+                ResourceServerUrl = "http://aws.nage.wo.tc:8021/file/history/"
+            };
+
+            myThread = new BackgroundWorker()
+            {
+                WorkerReportsProgress = true,
+                WorkerSupportsCancellation = true
+            };
+
+            List<object> arguments = new List<object>()
+            {
+                updateFiles,
+                SavePathTextBox.Text
+            };
+
+            myThread.DoWork += serverConnect.DownloadPatchFile;
+            myThread.RunWorkerAsync(arguments);
+
+            logTextBox.Text += "Finish to download path files.\n";
+    }
+        
+        
     }
 
 

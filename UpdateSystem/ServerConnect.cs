@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Net;
 using System.IO;
+using System.IO.Compression;
+using System.ComponentModel;
 
 namespace UpdateSystem
 {
@@ -21,6 +23,7 @@ namespace UpdateSystem
 
         public string Url { get; set; }
         public string Content { get; set; }
+        public string ResourceServerUrl { get; set; }
 
         public string PostResponse()
         {
@@ -59,6 +62,39 @@ namespace UpdateSystem
             }
 
             return response;
+        }
+
+        public void DownloadPatchFile(object sender, DoWorkEventArgs e)
+        {
+            List<UpdateFile> patchFileList = (List<UpdateFile>)(((List<Object>)e.Argument)[0]);
+            string savePath = (string)(((List<Object>)e.Argument)[1]);
+
+            using (WebClient client = new WebClient())
+            {
+                foreach (UpdateFile patchFile in patchFileList)
+                {
+                    switch (patchFile.Type)
+                    {
+                        case 'D':
+                            {
+                                string localPath = savePath + patchFile.Path;
+                                System.IO.Directory.CreateDirectory(localPath);
+                                break;
+                            }
+                        case 'F':
+                            {
+                                string url = (ResourceServerUrl + patchFile.GetDownPath()).Replace("\\", "/");
+                                string localPath = savePath + patchFile.GetPathFileName();
+                                string parentDir = localPath.Remove(localPath.LastIndexOf("\\"));
+                                System.IO.Directory.CreateDirectory(parentDir);
+                                client.DownloadFile(url, localPath);
+                                ZipFile.ExtractToDirectory(localPath, parentDir);
+                                File.Delete(localPath);
+                                break;
+                            }
+                    }
+                }
+            }
         }
 
         public void Reset()

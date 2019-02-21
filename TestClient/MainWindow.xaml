@@ -44,7 +44,10 @@
                 <Label Content="Update" />
                 <Label Margin="30 0 0 0" Content="new version is " />
                 <TextBox Name="VersionText" Width="40" VerticalAlignment="Center" TextAlignment="Center" Text=""/>
-                <Button Content="Download" Name="downloadButton" Height="25" HorizontalAlignment="Right" Width="Auto" IsEnabled="False" Click="DownloadButton_Click"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
+                    <TextBox Name="SavePathTextBox" Text="C:\WorkSpace\PatchTest\Resource" Width="200"  VerticalAlignment="Center" Margin="0 0 20 0"/>
+                    <Button Content="Download" Name="downloadButton" Height="25" Width="Auto" IsEnabled="False" Click="DownloadButton_Click"/>
+                </StackPanel>
             </DockPanel>
             <ListView Grid.Row="1" Name="updateListView">
                 <ListView.View>

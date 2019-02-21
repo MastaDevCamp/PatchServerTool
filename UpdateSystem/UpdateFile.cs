@@ -50,5 +50,15 @@ namespace UpdateSystem
 
             return this;
         }
+
+        public string GetDownPath()
+        {
+            return this.Version + this.Path + "." + this.CompressType;
+        }
+
+        public string GetPathFileName()
+        {
+            return this.Path + "." + this.CompressType;
+        }
     }
 }

@@ -115,7 +115,7 @@ namespace TestClient
             myThread.RunWorkerAsync(arguments);
 
             logTextBox.Text += "Finish to download path files.\n";
-    }
+        }
         
         
     }

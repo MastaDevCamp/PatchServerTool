@@ -73,27 +73,57 @@ namespace UpdateSystem
             {
                 foreach (UpdateFile patchFile in patchFileList)
                 {
-                    switch (patchFile.Type)
+                    switch(patchFile.DiffType)
                     {
                         case 'D':
                             {
-                                string localPath = savePath + patchFile.Path;
-                                System.IO.Directory.CreateDirectory(localPath);
+                                DeleteFile(patchFile, savePath);
                                 break;
                             }
-                        case 'F':
+                        case 'U':
                             {
-                                string url = (ResourceServerUrl + patchFile.GetDownPath()).Replace("\\", "/");
-                                string localPath = savePath + patchFile.GetPathFileName();
-                                string parentDir = localPath.Remove(localPath.LastIndexOf("\\"));
-                                System.IO.Directory.CreateDirectory(parentDir);
-                                client.DownloadFile(url, localPath);
-                                ZipFile.ExtractToDirectory(localPath, parentDir);
-                                File.Delete(localPath);
+                                DeleteFile(patchFile, savePath);
+                                DownloadFile(client, patchFile, savePath);
+                                break;
+                            }
+                        case 'C':
+                            {
+                                DownloadFile(client, patchFile, savePath);
                                 break;
                             }
                     }
+                    
                 }
+            }
+        }
+
+        public void DeleteFile(UpdateFile patchFile, string savePath)
+        {
+            string localPath = savePath + patchFile.GetPathFileName();
+            File.Delete(localPath);
+        }
+
+        public void DownloadFile(WebClient client, UpdateFile patchFile, string savePath)
+        {
+            switch (patchFile.Type)
+            {
+                case 'D':
+                    {
+                        string localPath = savePath + patchFile.Path;
+                        Directory.CreateDirectory(localPath);
+                        break;
+                    }
+                case 'F':
+                    {
+                        string url = (ResourceServerUrl + patchFile.GetDownPath()).Replace("\\", "/");
+                        string localPath = savePath + patchFile.GetPathFileName();
+                        string parentDir = localPath.Remove(localPath.LastIndexOf("\\"));
+                        System.IO.Directory.CreateDirectory(parentDir);
+                        client.DownloadFile(url, localPath);
+                        ZipFile.ExtractToDirectory(localPath, parentDir);
+                        File.Delete(localPath);
+                        break;
+                    }
             }
         }
 
